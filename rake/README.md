@@ -86,3 +86,53 @@
   STUFF = DEV
   ```
 - Rake support standard bash command line functions also like `ls`, `cp` etc.
+- Rake tasks with arguments: [Example](cli_argument.rake)
+  ```bash
+  $ rake -f cli_argument.rake my_task[1,false]
+  Args were: #<Rake::TaskArguments arg1: 1, arg2: false> of class Rake::TaskArguments
+  arg1 was: '1' of class String
+  arg2 was: 'false' of class String
+
+  # OR - in case we want to use space in args then put them under ""
+
+  $ rake -f cli_argument.rake "my_task[1, 2]"
+  Args were: #<Rake::TaskArguments arg1: 1, arg2: 2> of class Rake::TaskArguments
+  arg1 was: '1' of class String
+  arg2 was: '2' of class String
+  ```
+  Invoking other tasks which pass arguments to prev task
+  ```bash
+  $ ake -f cli_argument.rake invoke_my_task_first
+  Args were: #<Rake::TaskArguments arg1: 1, arg2: 2> of class Rake::TaskArguments
+  arg1 was: '1' of class String
+  arg2 was: '2' of class String
+  
+  # OR
+  $ rake -f cli_argument.rake invoke_my_task_second
+  Args were: #<Rake::TaskArguments arg1: 3, arg2: 4> of class Rake::TaskArguments
+  arg1 was: '3' of class Integer
+  arg2 was: '4' of class Integer
+  ```
+  Invoking a task with prerequisite task as the one which takes arguments, then the args will be forwarded to that task
+  ```bash
+  rake -f cli_argument.rake with_prerequisite[5,6]
+  Args were: #<Rake::TaskArguments arg1: 5, arg2: 6> of class Rake::TaskArguments
+  arg1 was: '5' of class String
+  arg2 was: '6' of class String
+  ```
+  We can also pass default parameters
+  ```bash
+  $ rake -f cli_argument.rake with_defaults
+  Args with defaults were: #<Rake::TaskArguments arg1: default_1, arg2: default_2>
+
+  # OR - remember not to put spaces in args 
+
+  rake -f cli_argument.rake with_defaults[1,2]
+  Args with defaults were: #<Rake::TaskArguments arg1: 1, arg2: 2>
+  ```
+- If running the task from Rails, it's best to preload the environment by adding `=> [:environment]` which is a way to setup dependent tasks.
+  ```bash
+  task :work, [:option, :foo, :bar] => [:environment] do |task, args|
+    puts "work", args
+  end
+  ```
