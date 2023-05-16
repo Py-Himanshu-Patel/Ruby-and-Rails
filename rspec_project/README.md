@@ -236,3 +236,11 @@ FactoryBot.define do
   end
 end
 ```
+- Add below snippet in `rails_helper.rb` to remove `FactoryBot` prefix while using factory bot.
+```ruby
+# To Remove FactoryBot prefix from factory bot methods
+RSpec.configure do |config|
+  config.include FactoryBot::Syntax::Methods
+end
+```
+- Instead of actually creating a object in DB using `create` in factory bot we can use `build` which is faster then `create` and also don't actually save the instance in DB.
