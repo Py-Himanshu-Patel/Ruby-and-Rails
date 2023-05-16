@@ -1,6 +1,7 @@
 # Rspec and Factory Bot
 
- 
+## Rspec basic setup
+
 - Write the `gem 'rspec-rails'` in Gemfile and hit `bundle install`. This will install Rspec for rails.
 - Setup the rspec in rails with spec helper and rails helpers
 ```bash
@@ -128,4 +129,98 @@ Failures:
      
        expected false
             got true
+```
+
+## Factory Bot
+
+- Write `gem 'factory_bot_rails'` in Gemfile and do `bundle install`
+- Now generating model will also create factories for same and not just spec files.
+```bash
+$ rails g model Dummy
+      invoke  active_record
+      create    db/migrate/20230516095446_create_dummies.rb
+      create    app/models/dummy.rb
+      invoke    rspec
+      create      spec/models/dummy_spec.rb
+      invoke      factory_bot
+      create        spec/factories/dummies.rb
+```
+Delete the model afterwards
+```bash
+$ rails d model Dummy
+      invoke  active_record
+      remove    db/migrate/20230516095446_create_dummies.rb
+      remove    app/models/dummy.rb
+      invoke    rspec
+      remove      spec/models/dummy_spec.rb
+      invoke      factory_bot
+      remove        spec/factories/dummies.rb
+```
+- Check the factory file generated.
+```bash
+$ rails g model Dummy name:string age:integer dob:datetime
+      invoke  active_record
+      create    db/migrate/20230516102147_create_dummies.rb
+      create    app/models/dummy.rb
+      invoke    rspec
+      create      spec/models/dummy_spec.rb
+      invoke      factory_bot
+      create        spec/factories/dummies.rb
+```
+```ruby
+FactoryBot.define do
+  factory :dummy do
+    name { "MyString" }
+    age { 1 }
+    dob { "2023-05-16 15:51:47" }
+  end
+end
+```
+Here we the block return the expression inside them as value, whenever the factory is called.
+```
+f = FactoryBot.create(:dummy)
+f.name == "MyString"
+```
+- Migrate the migrations of model we create above `rails db:migrate` and then tryout the FactoryBot in rails console. Also check the test database config in `database.yml`. This test db is erased all the times we run rake.
+- Write some test in `dummy_spec.rb`
+```ruby
+require 'rails_helper'
+
+RSpec.describe Dummy, type: :model do
+  it "age must be less than 21" do
+    # create actually create an dummy object and saves it to DB
+    dummy = FactoryBot.create(:dummy)
+    expect(dummy.age).to be < 21
+  end
+
+  it "must have an age greater than 21" do
+    # create actually create an dummy object and saves it to DB
+    dummy = FactoryBot.create(:dummy, age: 22)
+    expect(dummy.age).to be > 21
+  end
+end
+```
+- Add a migration to dummy for email
+```bash
+rails g migrate add_email_to_dummy email:string
+```
+Tinker the migration a bit to have email as non null and default value for existing data.
+```ruby
+class AddEmailToDummy < ActiveRecord::Migration[7.0]
+  def change
+    add_column :dummies, :email, :string, null: false, default: "random@email.com"
+    add_index :dummies, :email, unique: true
+  end
+end
+```
+- Update the email in factory
+```ruby
+FactoryBot.define do
+  factory :dummy do
+    name { "MyString" }
+    age { 1 }
+    dob { "2023-05-16 15:51:47" }
+    email {"first@email.com"}
+  end
+end
 ```
