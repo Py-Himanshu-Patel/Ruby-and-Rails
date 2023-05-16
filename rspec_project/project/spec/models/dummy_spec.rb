@@ -12,8 +12,15 @@ RSpec.describe Dummy, type: :model do
     expect(dummy.age).to be > 21
   end
 
-  it "match the email to factory" do
+  it "match the single email to factory" do
     dummy = FactoryBot.create(:dummy)
-    expect(dummy.email).to eql("first@email.com")
+    expect(dummy.email).to eql("my-3@email.com")
+  end
+
+  it "match the double email to factory" do
+    dummy1 = FactoryBot.create(:dummy)
+    dummy2 = FactoryBot.create(:dummy)
+    expect(dummy1.email).to eql("my-4@email.com")
+    expect(dummy2.email).to eql("my-5@email.com")
   end
 end
