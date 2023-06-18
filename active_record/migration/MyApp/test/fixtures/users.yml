@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  occupation: MyString
+  max_login_attempts: 1
+  must_change_password: false
+
+two:
+  name: MyString
+  occupation: MyString
+  max_login_attempts: 1
+  must_change_password: false
