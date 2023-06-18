@@ -42,4 +42,4 @@ production:
 ```
 - Also install the gem for pg `bundle add pg` and `bundle install`
 - Create the db `rails db:create`. This will create the db's in psql
-
+- Install `$ bundle add awesome_print` for better print in console.

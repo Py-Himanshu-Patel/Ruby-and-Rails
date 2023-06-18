@@ -29,7 +29,22 @@ fixtures :my_products
 end
 ```
 
+
 ## CRUD
+Use below command to setup Model Class
+```bash
+$ rails g model User name:string occupation:string max_login_attempts:integer must_change_password:boolean
+Running via Spring preloader in process 753678
+      invoke  active_record
+      create    db/migrate/20230618142459_create_users.rb
+      create    app/models/user.rb
+      invoke    test_unit
+      create      test/models/user_test.rb
+      create      test/fixtures/users.yml
+```
+```bash
+$ rails db:migrate
+```
 
 ### Create
 ```ruby
@@ -77,6 +92,8 @@ user.update(name: 'Dave')
 To update all the records
 ```ruby
 User.update_all "max_login_attempts = 3, must_change_password = 'true'"
+# OR
+User.update_all(max_login_attempts: 5)
 # OR
 User.update(:all, max_login_attempts: 3, must_change_password: true)
 ```
