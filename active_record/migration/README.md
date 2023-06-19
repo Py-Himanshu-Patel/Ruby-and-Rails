@@ -49,6 +49,25 @@ class AddPartNumberToProducts < ActiveRecord::Migration[7.0]
 end
 ```
 
+### List Migrations
+```shell
+rails db:migrate:status
+
+ Status   Migration ID    Migration Name
+--------------------------------------------------
+   up     20230618142459  Create users
+   up     20230618183918  Create products
+   up     20230618184613  Add part number to products
+   up     20230618191651  Add user ref to products
+   up     20230618193901  Create join table customer product
+   up     20230619030152  Create table
+  down    20230619052200  Join table
+  down    20230619052428  Create categories
+```
+- Perform a `rake db:migrate VERSION=XXX` on all environments, to the version before the one I want to delete. Status will become `down` for these migrations.
+- Delete the migration file manually.
+- If there are pending migrations (i.e., the migration I removed was not the last one), I just perform a new rake db:migrate again.
+
 ### Add/Remove columns
 If the migration name is of the form `AddColumnToTable` or `RemoveColumnFromTable` 
 and is followed by a list of column names and types then a migration containing 
@@ -137,4 +156,139 @@ end
 ```
     
 ### Model Generators
+The model, resource, and scaffold generators will create migrations appropriate for adding a new model. 
+This migration will already contain instructions for creating the relevant table. If you tell Rails what 
+columns you want, then statements for adding these columns will also be created.
+
+```shell
+bin/rails generate model Product name:string description:text
+```
+```ruby
+class CreateProducts < ActiveRecord::Migration[7.0]
+  def change
+    create_table :products do |t|
+      t.string :name
+      t.text :description
+
+      t.timestamps
+    end
+  end
+end
+```
+    
 ### Passing Modifiers
+```shell
+bin/rails generate migration AddDetailsToProducts 'price:decimal{5,2}' supplier:references{polymorphic}
+```
+```ruby
+class AddDetailsToProducts < ActiveRecord::Migration[7.0]
+  def change
+    add_column :products, :price, :decimal, precision: 5, scale: 2
+    add_reference :products, :supplier, polymorphic: true
+  end
+end
+```
+
+## Writing a Migration
+
+### Creating a Table
+Create a blank migration and write it as per per need
+```shell
+rails g migration CreateTable
+```
+```ruby
+class CreateTable < ActiveRecord::Migration[6.0]
+  def change
+    create_table :tables do |t|
+    end
+  end
+end
+```
+
+Write code to actually create a table, (Here I did the mistake but create table name with plural name
+not singular, that too snake cased not camel case).
+```ruby
+class CreateTable < ActiveRecord::Migration[6.0]
+  def change
+    create_table :MyTable do |t|
+      t.string :firstname
+      t.string :lastname
+    end
+  end
+end
+```
+Apply the migration and check the DB
+```shell
+rails db:migrate
+```
+```shell
+MyAppDev=# \dt
+                List of relations
+ Schema |         Name         | Type  |  Owner   
+--------+----------------------+-------+----------
+ public | MyTable              | table | himanshu
+ public | ar_internal_metadata | table | himanshu
+ public | customers_products   | table | himanshu
+ public | products             | table | himanshu
+ public | schema_migrations    | table | himanshu
+ public | users                | table | himanshu
+(6 rows)
+```
+
+# Create a Join Table
+The migration method `create_join_table` creates an `HABTM` (has and belongs to many) join table. 
+A typical use would be:
+```shell
+rails generate model Category name:string quantity:integer
+rails db:migrate
+rails generate migration JoinTable
+```
+```ruby
+class JoinTable < ActiveRecord::Migration[6.0]
+  def change
+    create_join_table :products, :categories
+  end
+end
+```
+This creates a table `categories_products` in DB table are appended
+in alphabetical sort order.
+
+To customize the name of the table, provide a `:table_name option:`
+This will creates a `categorization` table.
+```ruby
+create_join_table :products, :categories, table_name: :categorization
+```
+
+`create_join_table` also accepts a block, which you can use to add indices 
+(which are not created by default) or additional columns:
+```shell
+create_join_table :products, :categories do |t|
+  t.index :product_id
+  t.index :category_id
+end
+```
+
+### Changing Table
+```shell
+rails generate migration change_table
+```
+Make sure to put the exact name of table as appear in DB
+in front of `change_table` statement.
+```ruby
+class ChangeTable < ActiveRecord::Migration[6.0]
+  def change
+    change_table :products do |t|
+      # multiple columns name can pe put here
+      t.remove :name
+      # create a column of string type
+      t.string :sale_location
+      # put a index on this column
+      t.index :part_number
+      # rename column from to
+      t.rename :description, :desc
+    end
+  end
+end
+```
+
+### Changing Columns
